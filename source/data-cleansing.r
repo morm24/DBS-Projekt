@@ -5,15 +5,29 @@
 #Laden der Pakete fürFuntionen
 pacman::p_load(shiny,janitor, tidyverse, broom, reshape2,dplyr)
 
+setwd(getSrcDirectory()[1])
+
+#if useing R-studio
+rstudioapi::getActiveDocumentContext
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
 #Einlesen der Daten nd speichern in Tibbels
-emission <- read_csv("C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/original_data/co2_emission.csv")
-gdp_w <- read_csv("C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/original_data/gdp.csv")
-p_growth_w <- read_csv("C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/original_data/population_growth.csv")
-p_total <- read_csv("C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/original_data/population_total.csv")
-energy <- read_csv("C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/original_data/total-energy-consumption.csv")
+
+##old red functions
+#emission <- read_csv("C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/original_data/co2_emission.csv")
+#gdp_w <- read_csv("C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/original_data/gdp.csv")
+#p_growth_w <- read_csv("C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/original_data/population_growth.csv")
+#p_total <- read_csv("C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/original_data/population_total.csv")
+#energy <- read_csv("C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/original_data/total-energy-consumption.csv")
+
+emission <- read_csv("../data/original_data/co2_emission.csv")
+gdp_w <- read_csv("../data/original_data/gdp.csv")
+p_growth_w <- read_csv("../data/original_data/population_growth.csv")
+p_total <- read_csv("../data/original_data/population_total.csv")
+energy <- read_csv("../data/original_data/total-energy-consumption.csv")
 
 
-energy
+
 #Verändern der Daten von WIde zuLong format
 
 gdp <- melt( gdp_w, id.vars = c("Country Name","Country Code","Indicator Name","Indicator Code"), variable.name = "year") %>% as_tibble()
@@ -114,10 +128,10 @@ p_growth$`Indicator Code` <- NULL
 
 
 #spechern der DAten in .csv dateinen
-write.csv(gdp,"C:/Users/Moritz/Desktop/projects/Projekt/data/new_data/gdp.csv")
-write.csv(p_growth,"C:/Users/Moritz/Desktop/projects/Projekt/data/new_data/population_growth.csv")
-write.csv(country,"C:/Users/Moritz/Desktop/projects/Projekt/data/new_data/country.csv")
-write.csv(emission,"C:/Users/Moritz/Desktop/projects/Projekt/data/new_data/emission.csv")
-write.csv(p_total,"C:/Users/Moritz/Desktop/projects/Projekt/data/new_data/population_total.csv")
-write.csv(energy,"C:/Users/Moritz/Desktop/projects/Projekt/data/new_data/energy.csv")
+write.csv(gdp,"../data/new_data/gdp.csv")
+write.csv(p_growth,"../data/new_data/population_growth.csv")
+write.csv(country,"../data/new_data/country.csv")
+write.csv(emission,"../data/new_data/emission.csv")
+write.csv(p_total,"../data/new_data/population_total.csv")
+write.csv(energy,"../data/new_data/energy.csv")
 
