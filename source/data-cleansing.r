@@ -114,10 +114,10 @@ p_growth$`Indicator Code` <- NULL
 
 
 #spechern der DAten in .csv dateinen
-write.csv(gdp,"C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/new_data/gdp.csv")
-write.csv(p_growth,"C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/new_data/population_growth.csv")
-write.csv(country,"C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/new_data/country.csv")
-write.csv(emission,"C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/new_data/emission.csv")
-write.csv(p_total,"C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/new_data/population_total.csv")
-write.csv(energy,"C:/Users/Moritz/Desktop/projects/DBS-Projekt/data/new_data/energy.csv")
+write.csv(gdp,"C:/Users/Moritz/Desktop/projects/Projekt/data/new_data/gdp.csv")
+write.csv(p_growth,"C:/Users/Moritz/Desktop/projects/Projekt/data/new_data/population_growth.csv")
+write.csv(country,"C:/Users/Moritz/Desktop/projects/Projekt/data/new_data/country.csv")
+write.csv(emission,"C:/Users/Moritz/Desktop/projects/Projekt/data/new_data/emission.csv")
+write.csv(p_total,"C:/Users/Moritz/Desktop/projects/Projekt/data/new_data/population_total.csv")
+write.csv(energy,"C:/Users/Moritz/Desktop/projects/Projekt/data/new_data/energy.csv")
 
