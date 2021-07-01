@@ -18,8 +18,8 @@ library(DBI)
 
 
 mydb = dbConnect(MySQL(),
-                 user='root',
-                 password='5142',
+                 user='test',
+                 password='test',
                  dbname='dbs_project',
                  host='192.168.0.17',
                  port=3306)

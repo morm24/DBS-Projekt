@@ -20,10 +20,13 @@ mydb = dbConnect(MySQL(),
 dbListTables(mydb)
 
 country <- dbGetQuery(mydb, 'SELECT * FROM country')
+energy <- dbGetQuery(mydb, 'SELECT * FROM energy')
 
 
 
 dbDisconnect( dbListConnections( dbDriver( drv = "MySQL"))[[1]])
+
+
 
 
 
@@ -60,7 +63,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                             ##             ),
                              
                             selectInput(
-                               inputId = "selectC2",
+                               inputId = "selectT1",
                                label = h4("Select Table"),
                                choices = list("emission" = 1,
                                               "gdp" = 2,
@@ -72,7 +75,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                              ),
                             
                             selectInput(
-                              inputId = "selectC1",
+                              inputId = "selectT2",
                               label = h4("Select 2nd. Table"),
                               choices = list("emission" = 1,
                                              "gdp" = 2,
@@ -88,10 +91,12 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                              
                            ), # sidebarPanel
                            mainPanel(
-                             h1("Header 1"),
+                             h1("Line Graph"),
+                             
+                             plotOutput("line"),
                              
                              h4("Output 1"),
-                     verbatimTextOutput("txtout"),
+                     textOutput("txtout"),
                      h4("Output 2"),
                      verbatimTextOutput("text")
                              
@@ -105,6 +110,25 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
 ) # fluidPage
 
 server <- function(input, output) {
+  
+  
+  
+  
+  typeof('inSelect')
+  #plot <- select(energy)
+  #as.list(inSelect)
+  list <- c("DEU","FRA","BEL")
+  #energy_sub <- filter(energy, code == 'inSelect')
+  energy_sub <- filter(energy, code == list)
+  
+  output$line <- renderPlot({
+  ggplot(data=energy_sub, aes(x=year, y=primary_energy_consumption, group=code)) +
+    geom_line( aes(color=code))
+  })
+  
+  
+  
+  
   
   output$txtout <- renderText({
     paste(input$inSelect )
