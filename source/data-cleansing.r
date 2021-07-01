@@ -5,7 +5,7 @@
 #Laden der Pakete fürFuntionen
 pacman::p_load(shiny,janitor, tidyverse, broom, reshape2,dplyr)
 
-setwd(getSrcDirectory()[1])
+#setwd(getSrcDirectory()[1])
 
 #if useing R-studio
 rstudioapi::getActiveDocumentContext

@@ -2,7 +2,7 @@
 #Date: 30.06.2021
 #verbindungstest auf die datenbank
 
-install.packages("RMySQL")
+#install.packages("RMySQL")
 library(RMySQL)
 library(DBI)
 
@@ -21,7 +21,8 @@ mydb = dbConnect(MySQL(),
                  user='root',
                  password='5142',
                  dbname='dbs_project',
-                 host='127.0.0.1')
+                 host='192.168.0.17',
+                 port=3306)
 
 
 dbListTables(mydb)
@@ -31,11 +32,11 @@ dbListTables(mydb)
 
 gdp <- dbGetQuery(mydb, 'SELECT * FROM gdp')
 
+country <- dbGetQuery(mydb, 'SELECT * FROM country')
 
 
 
-
-
+gdp$code
 
 
 ##Warning!!!   dbSendQuery is better to change the database
@@ -55,16 +56,16 @@ max(gdp_tibble$value)
 
 
 
+#list all connections with a database:
+dbListConnections( dbDriver( drv = "MySQL"))
+#close the specific connecion
+x <-1     #index of MySQLConnection you want to close
+
+dbDisconnect( dbListConnections( dbDriver( drv = "MySQL"))[[x]])
+
+#or close all at once
+lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
 
 
 
 
-
-
-
-alusdb = dbConnect(MySQL(),
-                 user='alus',
-                 password='word',
-                 dbname='SQLtest',
-                 host='192.168.0.191',
-                 port= 3306)
