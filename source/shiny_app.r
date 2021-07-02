@@ -22,7 +22,7 @@ mydb = dbConnect(MySQL(),
 dbListTables(mydb)
 
 country <- dbGetQuery(mydb, 'SELECT * FROM country')
-energy <- dbGetQuery(mydb, 'SELECT * FROM energy')
+energy  <- dbGetQuery(mydb, 'SELECT * FROM energy')
 
 
 dbDisconnect( dbListConnections( dbDriver( drv = "MySQL"))[[1]])
@@ -135,14 +135,14 @@ server <- function(input, output) {
     list <- c("DEU","FRA")
     
     
-    energy_sub <- filter(energy, code == list)
+    energy_sub <- filter(energy, code == input$'inSelect')
     
    
   })
   
   output$table <- renderDataTable({
     if(input$submitbutton>0){
-    datasetInput$energy_sub
+      isolate(datasetInput(energy_sub))
       }
     })
   
@@ -151,7 +151,7 @@ server <- function(input, output) {
     
       
       
-    ggplot(data=datasetInput$energy_sub, aes(x=year, y=primary_energy_consumption, group=code)) +
+    ggplot(data=datasetInput(), aes(x=year, y=primary_energy_consumption, group=code)) +
       geom_line( aes(color=code))
     }#if ende
   })#render plot ende
