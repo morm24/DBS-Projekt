@@ -9,6 +9,7 @@ library(shiny)
 library(shinythemes)
 library(RMySQL)
 library(dplyr)
+library(ggplot2)
 
 #COnnect to the Database
 mydb = dbConnect(MySQL(),
@@ -83,7 +84,9 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                               "energy" = 5,
                                               "none" = 6)#,
                                #options = list(maxitems =2)
-                             )
+                             ),
+                             
+                             actionButton("submitbutton", "Submit", class = "btn btn-primary")
                              
                              #textInput("txt1", "Given Name:", ""),
                              #textInput("txt2", "Surname:", ""),
@@ -97,6 +100,8 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                              h4("Output 2"),
                              verbatimTextOutput("text"),
                              
+                             
+                             dataTableOutput('table'),
                              
                              h1("Line Graph"),
                              
@@ -122,18 +127,38 @@ server <- function(input, output) {
   })
   
   
-  list <- c("DEU","FRA")
-  energy_sub <- filter(energy, code == list)
   
+  #halte das reaktive verhalten von shiny auf
+  datasetInput <- reactive({
+    
+    
+    list <- c("DEU","FRA")
+    
+    
+    energy_sub <- filter(energy, code == list)
+    
+   
+  })
   
+  output$table <- renderDataTable({
+    if(input$submitbutton>0){
+    datasetInput$energy_sub
+      }
+    })
   
   output$line <- renderPlot({
+    if(input$submitbutton>0){
     
-    
-    
-    ggplot(data=energy_sub, aes(x=year, y=primary_energy_consumption, group=code)) +
+      
+      
+    ggplot(data=datasetInput$energy_sub, aes(x=year, y=primary_energy_consumption, group=code)) +
       geom_line( aes(color=code))
-  })
+    }#if ende
+  })#render plot ende
+  
+  
+  
+  
   
   
 } # server
