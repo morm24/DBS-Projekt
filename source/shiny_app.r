@@ -8,6 +8,7 @@
 library(shiny)
 library(shinythemes)
 library(RMySQL)
+library(dplyr)
 
 #COnnect to the Database
 mydb = dbConnect(MySQL(),
@@ -20,16 +21,14 @@ mydb = dbConnect(MySQL(),
 dbListTables(mydb)
 
 country <- dbGetQuery(mydb, 'SELECT * FROM country')
-energy <- dbGetQuery(mydb, 'SELECT * FROM energy')
 
 
 
 dbDisconnect( dbListConnections( dbDriver( drv = "MySQL"))[[1]])
 
 
-
-
-
+countryN <- country$code
+names(countryN) <- country$name
 
 
 
@@ -45,25 +44,25 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                              
                              selectizeInput(inputId = 'inSelect',
                                             label = "Laender",
-                                            choices = country$name,
+                                            choices = countryN,
                                             multiple = TRUE,
                                             options = list(maxItems = 4, 
                                                            placeholder = 'waehle bis 4 Laender')
-                                            ),
+                             ),
                              
                              
                              ##selectInput("select", label = h3("Select Table"),
-                            ##             choices = list("emission" = 1,
-                            ##                            "gdp" = 2,
-                            ##                            "population growth" = 3,
-                            ##                            "population total" = 4,
-                            ##                            "energy" = 5,
-                            ##                            "country" = 6),
-                            ##             selected = 6
-                            ##             ),
+                             ##             choices = list("emission" = 1,
+                             ##                            "gdp" = 2,
+                             ##                            "population growth" = 3,
+                             ##                            "population total" = 4,
+                             ##                            "energy" = 5,
+                             ##                            "country" = 6),
+                             ##             selected = 6
+                             ##             ),
                              
-                            selectInput(
-                               inputId = "selectT1",
+                             selectInput(
+                               inputId = "selectC2",
                                label = h4("Select Table"),
                                choices = list("emission" = 1,
                                               "gdp" = 2,
@@ -73,32 +72,35 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                               "none" = 6)#,
                                #options = list(maxitems =2)
                              ),
-                            
-                            selectInput(
-                              inputId = "selectT2",
-                              label = h4("Select 2nd. Table"),
-                              choices = list("emission" = 1,
-                                             "gdp" = 2,
-                                             "population growth" = 3,
-                                             "population total" = 4,
-                                             "energy" = 5,
-                                             "none" = 6)#,
-                              #options = list(maxitems =2)
-                            )
-                            
+                             
+                             selectInput(
+                               inputId = "selectC1",
+                               label = h4("Select 2nd. Table"),
+                               choices = list("emission" = 1,
+                                              "gdp" = 2,
+                                              "population growth" = 3,
+                                              "population total" = 4,
+                                              "energy" = 5,
+                                              "none" = 6)#,
+                               #options = list(maxitems =2)
+                             )
+                             
                              #textInput("txt1", "Given Name:", ""),
                              #textInput("txt2", "Surname:", ""),
                              
                            ), # sidebarPanel
                            mainPanel(
-                             h1("Line Graph"),
-                             
-                             plotOutput("line"),
+                             h1("Header 1"),
                              
                              h4("Output 1"),
-                     textOutput("txtout"),
-                     h4("Output 2"),
-                     verbatimTextOutput("text")
+                             verbatimTextOutput("txtout"),
+                             h4("Output 2"),
+                             verbatimTextOutput("text"),
+                             
+                             
+                             h1("Line Graph"),
+                             
+                             plotOutput("line")
                              
                            ) # mainPanel
                            
@@ -111,32 +113,26 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
 
 server <- function(input, output) {
   
-  
-  
-  
-  typeof('inSelect')
-  #plot <- select(energy)
-  #as.list(inSelect)
-  list <- c("DEU","FRA","BEL")
-  #energy_sub <- filter(energy, code == 'inSelect')
-  energy_sub <- filter(energy, code == list)
-  
-  output$line <- renderPlot({
-  ggplot(data=energy_sub, aes(x=year, y=primary_energy_consumption, group=code)) +
-    geom_line( aes(color=code))
-  })
-  
-  
-  
-  
-  
   output$txtout <- renderText({
     paste(input$inSelect )
   })
   
   output$text <- renderPrint({
-    req(input$inSelect)
-    country$code[match(input$inSelect,country$name)]
+    paste(input$inSelect)
+  })
+  
+  
+  list <- c("DEU","FRA")
+  energy_sub <- filter(energy, code == list)
+  
+  
+  
+  output$line <- renderPlot({
+    
+    
+    
+    ggplot(data=energy_sub, aes(x=year, y=primary_energy_consumption, group=code)) +
+      geom_line( aes(color=code))
   })
   
   
