@@ -22,7 +22,7 @@ mydb = dbConnect(MySQL(),
 dbListTables(mydb)
 
 country <- dbGetQuery(mydb, 'SELECT * FROM country')
-
+energy <- dbGetQuery(mydb, 'SELECT * FROM energy')
 
 
 dbDisconnect( dbListConnections( dbDriver( drv = "MySQL"))[[1]])
