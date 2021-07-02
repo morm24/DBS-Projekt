@@ -11,6 +11,8 @@ library(RMySQL)
 library(dplyr)
 library(ggplot2)
 
+
+
 #COnnect to the Database
 mydb = dbConnect(MySQL(),
                  user='root',
@@ -21,11 +23,26 @@ mydb = dbConnect(MySQL(),
 
 dbListTables(mydb)
 
-country <- dbGetQuery(mydb, 'SELECT * FROM country')
+
+
+
+country <- dbGetQuery(mydb, 'SELECT * FROM country') 
+emission  <- dbGetQuery(mydb, 'SELECT * FROM co2_emission')
+gdp  <- dbGetQuery(mydb, 'SELECT * FROM gdp') 
+pop_t  <- dbGetQuery(mydb, 'SELECT * FROM population_total')
+pop_g  <- dbGetQuery(mydb, 'SELECT * FROM population_growth')
 energy  <- dbGetQuery(mydb, 'SELECT * FROM energy')
 
+colnames(emission)[3] <- "value"
+colnames(gdp)[3] <- "value"
+colnames(pop_t)[3] <- "value"
+colnames(pop_g)[3] <- "value"
+colnames(energy)[3] <- "value"
 
-dbDisconnect( dbListConnections( dbDriver( drv = "MySQL"))[[1]])
+
+
+
+lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
 
 
 countryN <- country$code
@@ -63,26 +80,32 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                              ##             ),
                              
                              selectInput(
-                               inputId = "selectC2",
+                               inputId = "selectT1",
                                label = h4("Select Table"),
-                               choices = list("emission" = 1,
-                                              "gdp" = 2,
-                                              "population growth" = 3,
-                                              "population total" = 4,
-                                              "energy" = 5,
-                                              "none" = 6)#,
-                               #options = list(maxitems =2)
+                               choices = list("emission" = 2,
+                                              "gdp" = 3,
+                                              "population growth" = 4,
+                                              "population total" = 5,
+                                              "energy" = 6,
+                                              "none" = 7
+                                 #"emission" = emission,
+                                  #            "gdp" ='gdp' ,
+                                   #           "population growth" = 'pop_g',
+                                    #          "population total" = 'pop_t',
+                                     #         "energy" = 'energy')#,
+                               #options = list(maxitems =2
+                               )
                              ),
                              
                              selectInput(
-                               inputId = "selectC1",
+                               inputId = "selectT2",
                                label = h4("Select 2nd. Table"),
-                               choices = list("emission" = 1,
-                                              "gdp" = 2,
-                                              "population growth" = 3,
-                                              "population total" = 4,
-                                              "energy" = 5,
-                                              "none" = 6)#,
+                               choices = list("emission" = 2,
+                                              "gdp" = 3,
+                                              "population growth" = 4,
+                                              "population total" = 5,
+                                              "energy" = 6,
+                                              "none" = 7)#,
                                #options = list(maxitems =2)
                              ),
                              
@@ -95,13 +118,12 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                            mainPanel(
                              h1("Header 1"),
                              
-                             h4("Output 1"),
-                             verbatimTextOutput("txtout"),
-                             h4("Output 2"),
-                             verbatimTextOutput("text"),
+                             #h4("Output 1"),
+                             #verbatimTextOutput("txtout"),
+                             #h4("Output 2"),
+                            # verbatimTextOutput("text"),
                              
-                             
-                             dataTableOutput('table'),
+                            
                              
                              h1("Line Graph"),
                              
@@ -132,26 +154,29 @@ server <- function(input, output) {
   datasetInput <- reactive({
     
     
-    list <- c("DEU","FRA")
+    switch((input$'selectT1'),
+           '2'={table <- emission},
+           '3'=(table <- gdp),
+           '4'=(table <- pop_g),
+           '5'=(table <- pop_t),
+           '6'=(table <- energy),
+           '7'=(table))        
+   
     
+    #table <- tables[input$'selectT1']
     
-    energy_sub <- filter(energy, code == input$'inSelect')
+    table_sub <- filter(table, code == input$'inSelect')
     
    
   })
-  
-  output$table <- renderDataTable({
-    if(input$submitbutton>0){
-      isolate(datasetInput(energy_sub))
-      }
-    })
+
   
   output$line <- renderPlot({
     if(input$submitbutton>0){
     
       
       
-    ggplot(data=datasetInput(), aes(x=year, y=primary_energy_consumption, group=code)) +
+    ggplot(data=datasetInput(), aes(x=year, y=value, group=code)) +
       geom_line( aes(color=code))
     }#if ende
   })#render plot ende
