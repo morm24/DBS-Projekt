@@ -39,7 +39,13 @@ colnames(pop_t)[3] <- "value"
 colnames(pop_g)[3] <- "value"
 colnames(energy)[3] <- "value"
 
+emission$year = as.numeric(as.character(emission$year))
+gdp$year = as.numeric(as.character(gdp$year))
+pop_t$year = as.numeric(as.character(pop_t$year))
+pop_g$year = as.numeric(as.character(pop_g$year))
+energy$year = as.numeric(as.character(energy$year))
 
+emission <- emission[-c(579)]
 
 
 lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
@@ -86,8 +92,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                               "gdp" = 3,
                                               "population growth" = 4,
                                               "population total" = 5,
-                                              "energy" = 6,
-                                              "none" = 7
+                                              "energy" = 6
                                  #"emission" = emission,
                                   #            "gdp" ='gdp' ,
                                    #           "population growth" = 'pop_g',
@@ -125,9 +130,14 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                              
                             
                              
-                             h1("Line Graph"),
+                             h1("Line Graph 1"),
                              
-                             plotOutput("line")
+                             plotOutput("line1"),
+                            
+                            h1("line Graph 2"),
+                            
+                            plotOutput("line2")
+                            
                              
                            ) # mainPanel
                            
@@ -151,7 +161,7 @@ server <- function(input, output) {
   
   
   #halte das reaktive verhalten von shiny auf
-  datasetInput <- reactive({
+  table_plot1 <- reactive({
     
     
     switch((input$'selectT1'),
@@ -159,27 +169,64 @@ server <- function(input, output) {
            '3'=(table <- gdp),
            '4'=(table <- pop_g),
            '5'=(table <- pop_t),
-           '6'=(table <- energy),
-           '7'=(table))        
+           '6'=(table <- energy))        
    
     
     #table <- tables[input$'selectT1']
     
     table_sub <- filter(table, code == input$'inSelect')
-    
    
   })
+  
+  table_plot2 <- reactive({
+    if(input$selectT2 != 7){
+      
+      switch((input$'selectT2'),
+             '2'={table2 <- emission},
+             '3'=(table2 <- gdp),
+             '4'=(table2 <- pop_g),
+             '5'=(table2 <- pop_t),
+             '6'=(table2 <- energy))
+      
+      table_sub2 <- filter(table2, code == input$'inSelect')
+      
+      #konkadiiere die letzt zeile der tabelle2 an tabelle 1 an. 
+      
+    }
+    })
 
   
-  output$line <- renderPlot({
+  output$line1 <- renderPlot({
     if(input$submitbutton>0){
     
       
       
-    ggplot(data=datasetInput(), aes(x=year, y=value, group=code)) +
-      geom_line( aes(color=code))
+    ggplot(data=table_plot1(), aes(x=year, y=value, group=code)) +
+      geom_line( aes(color=code)
+                   
+                 #+labs(y= "blah") 
+                 # scale_x_continuous(breakes=seq(1840, 2020, 10))
+                 )
+      
+      
     }#if ende
   })#render plot ende
+  output$line2 <- renderPlot({
+    if(input$submitbutton>0){
+      if(input$selectT2 != 7){
+       
+        ggplot(data=table_plot2(), aes(x=year, y=value, group=code)) +
+          geom_line( aes(color=code)+
+                       scale_y_continuous(labels = scales::comma)#+
+                     # scale_x_continuous(breakes=seq(1840, 2020, 10))
+          ) 
+        
+        
+      }
+    }
+    
+    
+  })
   
   
   
