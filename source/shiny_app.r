@@ -46,6 +46,14 @@ pop_g$year = as.numeric(as.character(pop_g$year))
 energy$year = as.numeric(as.character(energy$year))
 
 
+textInputRow<-function (inputId, label, value = "") 
+{
+  div(style="display:inline-block",
+      tags$label(label, `for` = inputId), 
+      tags$input(id = inputId, type = "text", value = value,class="input-small"))
+}
+
+
 
 
 lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
@@ -67,6 +75,10 @@ unit <- c("tons CO2" = "emission",
 # Define UI
 ui <- fluidPage(theme = shinytheme("sandstone"),
                 titlePanel("DBS-Project | Comparison of country-specific key figurs"),
+                ui = bootstrapPage(
+                  textInputRow(inputId="xlimitsmin", label="x-min", value = 0.0),
+                  textInputRow(inputId="xlimitsmax", label="x-max", value = 0.5)
+                ),
                 navbarPage(
                   # theme = "cerulean",  # <--- To use a theme, uncomment this
                   "",
@@ -78,6 +90,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                             label = "countries",
                                             choices = countryN,
                                             multiple = TRUE,
+                                            selected = subset(countryN,countryN %in% c("DEU","JPN","FRA","ZAF")),
                                             options = list(maxItems = 4, 
                                                            placeholder = 'select up to 4 countries')
                              ),
@@ -140,11 +153,23 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                            ) # mainPanel
                            
                   ), # Navbar 1, tabPanel
-                  tabPanel("Navbar 2", "This panel is intentionally left blank"),
+                  tabPanel("Tests", "This panel is intentionally left blank"),
+                  #hier soll eine vergleichsseite mit tests (t-tests) entstehen
                   
-                  
-                  tabPanel("Navbar 3", "This panel is intentionally left blank")
-                  
+                  tabPanel("DBS-Access", "This panel is intentionally left blank"),
+                  #ich sollen spezielle abfragen an die Datenbank ermoeglicht werden 
+                  tabPanel("Connection", 
+                           tags$h4("you can change the connection to the database here"),
+                           tags$h5("IP:")#,
+                          # textInput()
+                           
+                           
+                           
+                           
+                           
+                           
+                           
+                           )
                 ) # navbarPage
 ) # fluidPage
 
@@ -217,7 +242,7 @@ server <- function(input, output) {
           y = names(unit[which(unit == input$selectT1)]),
           title = input$"selectT1"
         ) +
-        scale_x_continuous(limits = c(1960, 2020))
+        scale_x_continuous(limits = c(1960, 2020),breaks = seq(1960,2020,10))
       
       
     }#if ende
@@ -237,7 +262,7 @@ server <- function(input, output) {
             y = names(unit[which(unit == input$selectT2)]),
             title = input$"selectT2"
           )+
-          scale_x_continuous(limits = c(1960, 2020))
+          scale_x_continuous(limits = c(1960, 2020),breaks = seq(1960, 2020, by = 10))#limits = c(1960, 2020, 5), breaks = (5))
         
         
       }
