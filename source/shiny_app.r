@@ -139,9 +139,11 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                              
                            ) # mainPanel
                            
-                  ) # Navbar 1, tabPanel
-                  #tabPanel("Navbar 2", "This panel is intentionally left blank"),
-                  #("Navbar 3", "This panel is intentionally left blank")
+                  ), # Navbar 1, tabPanel
+                  tabPanel("Navbar 2", "This panel is intentionally left blank"),
+                  
+                  
+                  tabPanel("Navbar 3", "This panel is intentionally left blank")
                   
                 ) # navbarPage
 ) # fluidPage
@@ -160,6 +162,7 @@ server <- function(input, output) {
   
   #halte das reaktive verhalten von shiny auf
   table_plot1 <- reactive({
+    if(input$submitbutton>0){
     
     
     switch((input$'selectT1'),
@@ -174,9 +177,11 @@ server <- function(input, output) {
     
     table_sub <- filter(table, code == input$'inSelect')
    
+    }
   })
   
   table_plot2 <- reactive({
+    if(input$submitbutton>0){
     if(input$selectT2 != 7){
       
       switch((input$'selectT2'),
@@ -190,6 +195,7 @@ server <- function(input, output) {
       
       #konkadiiere die letzt zeile der tabelle2 an tabelle 1 an. 
       
+    }
     }
     })
  
@@ -210,11 +216,14 @@ server <- function(input, output) {
           x = 'year',
           y = names(unit[which(unit == input$selectT1)]),
           title = input$"selectT1"
-        ) 
+        ) +
+        scale_x_continuous(limits = c(1960, 2020))
       
       
     }#if ende
   })#render plot ende
+  
+  
   output$line2 <- renderPlot({
     if(input$submitbutton>0){
       if(input$selectT2 != 7){
@@ -227,7 +236,8 @@ server <- function(input, output) {
             x = 'year',
             y = names(unit[which(unit == input$selectT2)]),
             title = input$"selectT2"
-          )
+          )+
+          scale_x_continuous(limits = c(1960, 2020))
         
         
       }
