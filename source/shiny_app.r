@@ -45,7 +45,7 @@ pop_t$year = as.numeric(as.character(pop_t$year))
 pop_g$year = as.numeric(as.character(pop_g$year))
 energy$year = as.numeric(as.character(energy$year))
 
-emission <- emission[-c(579)]
+
 
 
 lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
@@ -55,23 +55,31 @@ countryN <- country$code
 names(countryN) <- country$name
 
 
+unit <- c("tons CO2" = "emission",
+          "US$" ="gdp",
+          "annual %" = "population growth",
+          "count" = "population total",
+          "TWh" = "energy"
+)
+
+
 
 # Define UI
 ui <- fluidPage(theme = shinytheme("sandstone"),
-                titlePanel("DBS-Projekt | Vergleich Laenderspezifischer Kennzahlen"),
+                titlePanel("DBS-Project | Comparison of country-specific key figurs"),
                 navbarPage(
                   # theme = "cerulean",  # <--- To use a theme, uncomment this
                   "",
-                  tabPanel("Uebersicht",
+                  tabPanel("Overview",
                            sidebarPanel(
-                             tags$h3("Laenderauswahl"),
+                             tags$h3("table selectrion"),
                              
                              selectizeInput(inputId = 'inSelect',
-                                            label = "Laender",
+                                            label = "countries",
                                             choices = countryN,
                                             multiple = TRUE,
                                             options = list(maxItems = 4, 
-                                                           placeholder = 'waehle bis 4 Laender')
+                                                           placeholder = 'select up to 4 countries')
                              ),
                              
                              
@@ -87,12 +95,12 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                              
                              selectInput(
                                inputId = "selectT1",
-                               label = h4("Select Table"),
-                               choices = list("emission" = 2,
-                                              "gdp" = 3,
-                                              "population growth" = 4,
-                                              "population total" = 5,
-                                              "energy" = 6
+                               label = h4("Select 1st Table"),
+                               choices = list("emission" = "emission",
+                                              "gdp" = "gdp",
+                                              "population growth" = "population growth",
+                                              "population total" = "population total",
+                                              "energy" = "energy"
                                  #"emission" = emission,
                                   #            "gdp" ='gdp' ,
                                    #           "population growth" = 'pop_g',
@@ -104,14 +112,15 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                              
                              selectInput(
                                inputId = "selectT2",
-                               label = h4("Select 2nd. Table"),
-                               choices = list("emission" = 2,
-                                              "gdp" = 3,
-                                              "population growth" = 4,
-                                              "population total" = 5,
-                                              "energy" = 6,
-                                              "none" = 7)#,
-                               #options = list(maxitems =2)
+                               label = h4("Select 2nd Table"),
+                               choices = list(
+                                              "none" = 7,
+                                              "emission" = "emission",
+                                              "gdp" = "gdp",
+                                              "population growth" = "population growth",
+                                              "population total" = "population total",
+                                              "energy" = "energy"),
+                               selected = 
                              ),
                              
                              actionButton("submitbutton", "Submit", class = "btn btn-primary")
@@ -121,20 +130,9 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                              
                            ), # sidebarPanel
                            mainPanel(
-                             h1("Header 1"),
-                             
-                             #h4("Output 1"),
-                             #verbatimTextOutput("txtout"),
-                             #h4("Output 2"),
-                            # verbatimTextOutput("text"),
-                             
-                            
-                             
-                             h1("Line Graph 1"),
                              
                              plotOutput("line1"),
                             
-                            h1("line Graph 2"),
                             
                             plotOutput("line2")
                             
@@ -150,8 +148,8 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
 
 server <- function(input, output) {
   
-  output$txtout <- renderText({
-    paste(input$inSelect )
+  output$name1 <- renderText({
+    paste(input$input$"selectT1" )
   })
   
   output$text <- renderPrint({
@@ -165,11 +163,11 @@ server <- function(input, output) {
     
     
     switch((input$'selectT1'),
-           '2'={table <- emission},
-           '3'=(table <- gdp),
-           '4'=(table <- pop_g),
-           '5'=(table <- pop_t),
-           '6'=(table <- energy))        
+           "emission"=(table <- emission),
+           "gdp"=(table <- gdp),
+           'population growth'=(table <- pop_g),
+           'population total'=(table <- pop_t),
+           'energy'=(table <- energy))        
    
     
     #table <- tables[input$'selectT1']
@@ -182,11 +180,11 @@ server <- function(input, output) {
     if(input$selectT2 != 7){
       
       switch((input$'selectT2'),
-             '2'={table2 <- emission},
-             '3'=(table2 <- gdp),
-             '4'=(table2 <- pop_g),
-             '5'=(table2 <- pop_t),
-             '6'=(table2 <- energy))
+             "emission"=(table2 <- emission),
+             "gdp"=(table2 <- gdp),
+             'population growth'=(table2 <- pop_g),
+             'population total'=(table2 <- pop_t),
+             'energy'=(table2 <- energy))
       
       table_sub2 <- filter(table2, code == input$'inSelect')
       
@@ -194,19 +192,25 @@ server <- function(input, output) {
       
     }
     })
-
+ 
   
   output$line1 <- renderPlot({
     if(input$submitbutton>0){
-    
+   
       
       
     ggplot(data=table_plot1(), aes(x=year, y=value, group=code)) +
       geom_line( aes(color=code)
                    
-                 #+labs(y= "blah") 
-                 # scale_x_continuous(breakes=seq(1840, 2020, 10))
-                 )
+                   
+                 
+                 ) +
+        scale_y_continuous(labels = scales::comma)+
+        labs(
+          x = 'year',
+          y = names(unit[which(unit == input$selectT1)]),
+          title = input$"selectT1"
+        ) 
       
       
     }#if ende
@@ -216,10 +220,14 @@ server <- function(input, output) {
       if(input$selectT2 != 7){
        
         ggplot(data=table_plot2(), aes(x=year, y=value, group=code)) +
-          geom_line( aes(color=code)+
-                       scale_y_continuous(labels = scales::comma)#+
-                     # scale_x_continuous(breakes=seq(1840, 2020, 10))
-          ) 
+          geom_line( aes(color=code)
+          ) +
+          scale_y_continuous(labels = scales::comma)+
+          labs(
+            x = 'year',
+            y = names(unit[which(unit == input$selectT2)]),
+            title = input$"selectT2"
+          )
         
         
       }
@@ -227,8 +235,6 @@ server <- function(input, output) {
     
     
   })
-  
-  
   
   
   
