@@ -23,9 +23,9 @@ library(ggplot2)
 
 #here you can set cennection deteils, if you want to use the program
 user<-'root'
-password<-'5142'
-dbname<-'dbs_project'
-host<-'127.0.0.1'
+password<-'word'
+dbname<-'db_name'
+host<-'localhost'
 port<-3306
 #-----------------------------------------------------------------------------#
 
@@ -178,7 +178,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                            
                            sidebarPanel(
                              
-                             selectInput("select1", label = h3("Select Table"),
+                             selectInput("select1", label = h3("Select Table 1"),
                                          choices = c("energy", 
                                                      "co2_emission", 
                                                      "gdp", 
@@ -187,8 +187,9 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                          #selected = 1
                              ),
                              
-                             selectInput("select2", label = h3("Select Table"),
-                                         choices = c("energy", 
+                             selectInput("select2", label = h3("Select Table 2"),
+                                         choices = c("none",
+                                                     "energy", 
                                                      "co2_emission", 
                                                      "gdp", 
                                                      "population_total", 
@@ -205,17 +206,6 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                              
                              
                            )
-                  ),
-                  #hier soll eine vergleichsseite mit tests (t-tests) entstehen
-                  
-                  tabPanel("DBS-Access", "This panel is intentionally left blank"),
-                  #ich sollen spezielle abfragen an die Datenbank ermoeglicht werden
-                  
-                  
-                  tabPanel("Connection", 
-                           tags$h4("you can change the connection to the database here"),
-                           tags$h5("IP:")#,
-                           # textInput()
                   )
                 ) #end navbar
 ) # end fluidPage
@@ -240,7 +230,11 @@ server <- function(input, output) {
                         host=host,
                         port=port)
     
-    table <- dbGetQuery(mydb, paste0('SELECT * FROM ', input$select1, ' A, ', input$select2, ' B WHERE A.code = B.code AND A.year = B.year'))
+    if(input$select2 == "none")
+      table <- dbGetQuery(mydb, paste0('SELECT * FROM ', input$select1))
+    else
+      table <- dbGetQuery(mydb, paste0('SELECT * FROM ', input$select1, ' A, ', input$select2, 
+                                       ' B WHERE A.code = B.code AND A.year = B.year'))
     
     lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
     
