@@ -18,12 +18,26 @@ library(ggplot2)
 
 
 #Establish Dataabaase connection. 
+
+#-----------------------------------------------------------------------------#
+  
 #here you can set cennection deteils, if you want to use the program
+user<-'root'
+password<-'5142'
+dbname<-'dbs_project'
+host<-'127.0.0.1'
+port<-3306
+#-----------------------------------------------------------------------------#
+
+
+
 mydb = dbConnect(MySQL(),
-                 user='root',
-                 password='5142',
-                 dbname='dbs_project',
-                 host='127.0.0.1')
+                 user=user,
+                 password=password,
+                 dbname=dbname,
+                 host=host,
+                 port=port
+                 )
 
 
 #dbListTables(mydb)
@@ -160,7 +174,38 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                   #knowledge we had.
                   
                   
-                  tabPanel("Tests", "This panel is intentionally left blank"),
+                  tabPanel("Table display", 
+                           
+                                    sidebarPanel(
+                                      
+                                      selectInput("select1", label = h3("Select Table"),
+                                                  choices = c("energy", 
+                                                              "co2_emission", 
+                                                              "gdp", 
+                                                              "population_total", 
+                                                              "population_growth"),
+                                                  #selected = 1
+                                      ),
+                                      
+                                      selectInput("select2", label = h3("Select Table"),
+                                                  choices = c("energy", 
+                                                              "co2_emission", 
+                                                              "gdp", 
+                                                              "population_total", 
+                                                              "population_growth"),
+                                                  #selected = 1
+                                      ),
+                                      
+                                      
+                                      actionButton("mitbutton", "Submit")
+                                    ),
+                           mainPanel(
+                             dataTableOutput("data1"),
+                             
+                             
+                             
+                           )
+                           ),
                   #hier soll eine vergleichsseite mit tests (t-tests) entstehen
                   
                   tabPanel("DBS-Access", "This panel is intentionally left blank"),
@@ -181,6 +226,31 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
 #all data processing is done in this block of code
 server <- function(input, output) {
 
+  
+  output$data1 <- renderDataTable({
+    input$mitbutton
+    
+    if(input$mitbutton == 0)
+      return()
+    else
+      mydb <- dbConnect(MySQL(),     
+                        user=user,
+                        password=password,
+                        dbname=dbname,
+                        host=host,
+                        port=port)
+    
+    table <- dbGetQuery(mydb, paste0('SELECT * FROM ', input$select1, ' A, ', input$select2, ' B WHERE A.code = B.code AND A.year = B.year'))
+    
+    lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
+    
+    isolate(table)
+    
+  })
+  
+  
+  
+  
   
   #getting the table to use out of the Select 1st table field 
   table_plot1 <- reactive({
