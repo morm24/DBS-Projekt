@@ -1,0 +1,1 @@
+install packages with commen: install.packages(c("dplyr", "shiny, "shinythemes", "RMySQL", "ggplot2))
