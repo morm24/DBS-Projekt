@@ -50,5 +50,5 @@ If you have R and MySQL already installed and know how to use it, you can skip t
     
     To start the application, you have to open the File .../Projekt/source/shiny_app.r in your R environment.
     In Lines 24 - 29 you can change the connection details to your Database Server.
-    Now you can run the R script (in R-Studio, u can use CLRT + SHIFT + ENTER)
+    Now you can run the R script (in R-Studio, you can use CLRT + SHIFT + ENTER)
     Have fun with the app!
