@@ -1,7 +1,8 @@
 #-------------------------------#
-# AUthor: Moritz Berger         #
+# Author: Moritz Berger         #
 # Date: 25.06.2021              #
-# Versuch einer Shiny App       #
+# Complete shiny app for        #
+# DBS-prohject                  #
 #-------------------------------#
 
 # Load R packages
@@ -12,8 +13,12 @@ library(dplyr)
 library(ggplot2)
 
 
+#Fething and preprocessing data befor the UI is rendered, so we have all tables
+#set when the "real" programm starts
 
-#COnnect to the Database
+
+#Establish Dataabaase connection. 
+#here you can set cennection deteils, if you want to use the program
 mydb = dbConnect(MySQL(),
                  user='root',
                  password='5142',
@@ -21,11 +26,11 @@ mydb = dbConnect(MySQL(),
                  host='127.0.0.1')
 
 
-dbListTables(mydb)
+#dbListTables(mydb)
 
 
 
-
+#get all the tables from the Database
 country <- dbGetQuery(mydb, 'SELECT * FROM country') 
 emission  <- dbGetQuery(mydb, 'SELECT * FROM co2_emission')
 gdp  <- dbGetQuery(mydb, 'SELECT * FROM gdp') 
@@ -33,12 +38,16 @@ pop_t  <- dbGetQuery(mydb, 'SELECT * FROM population_total')
 pop_g  <- dbGetQuery(mydb, 'SELECT * FROM population_growth')
 energy  <- dbGetQuery(mydb, 'SELECT * FROM energy')
 
+
+#change the 3rd collum name in each dataabase to value, for easier processing
 colnames(emission)[3] <- "value"
 colnames(gdp)[3] <- "value"
 colnames(pop_t)[3] <- "value"
 colnames(pop_g)[3] <- "value"
 colnames(energy)[3] <- "value"
 
+
+#change the year column to an numeric type, to have a better scaled X-Axis
 emission$year = as.numeric(as.character(emission$year))
 gdp$year = as.numeric(as.character(gdp$year))
 pop_t$year = as.numeric(as.character(pop_t$year))
@@ -46,23 +55,17 @@ pop_g$year = as.numeric(as.character(pop_g$year))
 energy$year = as.numeric(as.character(energy$year))
 
 
-textInputRow<-function (inputId, label, value = "") 
-{
-  div(style="display:inline-block",
-      tags$label(label, `for` = inputId), 
-      tags$input(id = inputId, type = "text", value = value,class="input-small"))
-}
-
-
-
-
+#disconnect all database connections
 lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
 
 
+#store the coutry dataa in new formats to have easier access 
+#in the multiselect choiclist
 countryN <- country$code
 names(countryN) <- country$name
 
 
+#create a list Units, to easily add un to the Y-Axis of the Plot
 unit <- c("tons CO2" = "emission",
           "US$" ="gdp",
           "annual %" = "population growth",
@@ -72,40 +75,36 @@ unit <- c("tons CO2" = "emission",
 
 
 
-# Define UI
+#Here the User-Interface is defined for the shiny app.
 ui <- fluidPage(theme = shinytheme("sandstone"),
                 titlePanel("DBS-Project | Comparison of country-specific key figurs"),
-                ui = bootstrapPage(
-                  textInputRow(inputId="xlimitsmin", label="x-min", value = 0.0),
-                  textInputRow(inputId="xlimitsmax", label="x-max", value = 0.5)
-                ),
+                
                 navbarPage(
                   # theme = "cerulean",  # <--- To use a theme, uncomment this
                   "",
+                  
+                  
+                  #this is the tab panel to give an interactive 
+                  #data overvierview to the user
                   tabPanel("Overview",
                            sidebarPanel(
                              tags$h3("table selectrion"),
                              
+                             
+                             #Building a box where you can select multiple countries 
+                             #out of the country table and store them in the
+                             #input Object "inSelect"
                              selectizeInput(inputId = 'inSelect',
                                             label = "countries",
                                             choices = countryN,
                                             multiple = TRUE,
                                             selected = subset(countryN,countryN %in% c("DEU","JPN","FRA","ZAF")),
                                             options = list(maxItems = 4, 
-                                                           placeholder = 'select up to 4 countries')
+                                            placeholder = 'select up to 4 countries')
                              ),
                              
                              
-                             ##selectInput("select", label = h3("Select Table"),
-                             ##             choices = list("emission" = 1,
-                             ##                            "gdp" = 2,
-                             ##                            "population growth" = 3,
-                             ##                            "population total" = 4,
-                             ##                            "energy" = 5,
-                             ##                            "country" = 6),
-                             ##             selected = 6
-                             ##             ),
-                             
+                             #Box to select the first Table on the side
                              selectInput(
                                inputId = "selectT1",
                                label = h4("Select 1st Table"),
@@ -114,128 +113,126 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                               "population growth" = "population growth",
                                               "population total" = "population total",
                                               "energy" = "energy"
-                                 #"emission" = emission,
-                                  #            "gdp" ='gdp' ,
-                                   #           "population growth" = 'pop_g',
-                                    #          "population total" = 'pop_t',
-                                     #         "energy" = 'energy')#,
-                               #options = list(maxitems =2
                                )
                              ),
                              
+                             
+                             #Box to select the second Table on the side.
                              selectInput(
                                inputId = "selectT2",
                                label = h4("Select 2nd Table"),
-                               choices = list(
-                                              "none" = 7,
+                               choices = list("none" = 7,
                                               "emission" = "emission",
                                               "gdp" = "gdp",
                                               "population growth" = "population growth",
                                               "population total" = "population total",
-                                              "energy" = "energy"),
-                               selected = 
-                             ),
+                                              "energy" = "energy"
+                                 )
+                              ),
                              
+                             
+                             #added submitbutton on the site, so there are no
+                             #error messagtes when picking tables and stuff
                              actionButton("submitbutton", "Submit", class = "btn btn-primary")
-                             
-                             #textInput("txt1", "Given Name:", ""),
-                             #textInput("txt2", "Surname:", ""),
-                             
-                           ), # sidebarPanel
+                          ), 
+                           
+                          
+                          #Here we are aon the "main Page" of the Site 
+                          #where the plots are shown
                            mainPanel(
                              
+                             
+                             #plotting Plot nr.1
                              plotOutput("line1"),
                             
                             
-                            plotOutput("line2")
+                             #plotting plot nr.2
+                             plotOutput("line2")
                             
                              
-                           ) # mainPanel
+                           )#end of maain Panel 
                            
-                  ), # Navbar 1, tabPanel
+                  )#End of main tab
+                  , 
+                  
+                  # wanted to add more panels like an connection panel. 
+                  #sadly this wasent possible with the Time and 
+                  #knowledge we had.
+                  
+                  
                   tabPanel("Tests", "This panel is intentionally left blank"),
                   #hier soll eine vergleichsseite mit tests (t-tests) entstehen
                   
                   tabPanel("DBS-Access", "This panel is intentionally left blank"),
-                  #ich sollen spezielle abfragen an die Datenbank ermoeglicht werden 
+                  #ich sollen spezielle abfragen an die Datenbank ermoeglicht werden
+                  
+                  
                   tabPanel("Connection", 
                            tags$h4("you can change the connection to the database here"),
                            tags$h5("IP:")#,
                           # textInput()
-                           
-                           
-                           
-                           
-                           
-                           
-                           
-                           )
-                ) # navbarPage
-) # fluidPage
+                        )
+                ) #end navbar
+) # end fluidPage
 
+
+
+#in this part the reactive server is 
+#all data processing is done in this block of code
 server <- function(input, output) {
+
   
-  output$name1 <- renderText({
-    paste(input$input$"selectT1" )
-  })
-  
-  output$text <- renderPrint({
-    paste(input$inSelect)
-  })
-  
-  
-  
-  #halte das reaktive verhalten von shiny auf
+  #getting the table to use out of the Select 1st table field 
   table_plot1 <- reactive({
     if(input$submitbutton>0){
     
-    
+      
+    #adding the right table to an variable, selected by the string out of the 
+    #select 1st table
     switch((input$'selectT1'),
            "emission"=(table <- emission),
            "gdp"=(table <- gdp),
            'population growth'=(table <- pop_g),
            'population total'=(table <- pop_t),
            'energy'=(table <- energy))        
-   
     
-    #table <- tables[input$'selectT1']
-    
+    #short the Table, that only the rows with the country codes, 
+    #selected by the user are left
     table_sub <- filter(table, code == input$'inSelect')
    
     }
   })
   
+  
+  #getting the table to use out of the Select 2nd table field 
   table_plot2 <- reactive({
     if(input$submitbutton>0){
-    if(input$selectT2 != 7){
+      if(input$selectT2 != 7){
       
-      switch((input$'selectT2'),
+        switch((input$'selectT2'),
              "emission"=(table2 <- emission),
              "gdp"=(table2 <- gdp),
              'population growth'=(table2 <- pop_g),
              'population total'=(table2 <- pop_t),
              'energy'=(table2 <- energy))
       
-      table_sub2 <- filter(table2, code == input$'inSelect')
       
-      #konkadiiere die letzt zeile der tabelle2 an tabelle 1 an. 
+      #short the Table, that only the rows with the country codes, 
+      #selected by the user are left
+        table_sub2 <- filter(table2, code == input$'inSelect')
       
-    }
-    }
-    })
+        }#if ende
+      }#if ende
+    })#reactive ende
  
   
+  #render the first plot 
   output$line1 <- renderPlot({
     if(input$submitbutton>0){
    
-      
-      
+    #build the Plot as a ggplot
     ggplot(data=table_plot1(), aes(x=year, y=value, group=code)) +
-      geom_line( aes(color=code)
-                   
-                   
-                 
-                 ) +
+      geom_line( aes(color=code)) +
         scale_y_continuous(labels = scales::comma)+
         labs(
           x = 'year',
@@ -243,7 +240,6 @@ server <- function(input, output) {
           title = input$"selectT1"
         ) +
         scale_x_continuous(limits = c(1960, 2020),breaks = seq(1960,2020,10))
-      
       
     }#if ende
   })#render plot ende
@@ -253,28 +249,22 @@ server <- function(input, output) {
     if(input$submitbutton>0){
       if(input$selectT2 != 7){
        
+        #build the Plot as a ggplot
         ggplot(data=table_plot2(), aes(x=year, y=value, group=code)) +
-          geom_line( aes(color=code)
-          ) +
+          geom_line( aes(color=code)) +
           scale_y_continuous(labels = scales::comma)+
           labs(
             x = 'year',
             y = names(unit[which(unit == input$selectT2)]),
             title = input$"selectT2"
           )+
-          scale_x_continuous(limits = c(1960, 2020),breaks = seq(1960, 2020, by = 10))#limits = c(1960, 2020, 5), breaks = (5))
-        
-        
-      }
-    }
-    
-    
-  })
+          scale_x_continuous(limits = c(1960, 2020),breaks = seq(1960, 2020, by = 10))
+     
+      }#if ende
+    }#if ende
+  })#render plot ende
   
-  
-  
-  
-} # server
+} # server ende
 
 
 
