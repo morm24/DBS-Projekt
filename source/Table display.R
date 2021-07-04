@@ -30,16 +30,23 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                                          ),
                              
                              selectInput("select2", label = h3("Select Table"),
-                                         choices = c("energy", 
+                                         choices = c("none",
+                                                     "energy", 
                                                      "co2_emission", 
                                                      "gdp", 
                                                      "population_total", 
                                                      "population_growth"),
                                          #selected = 1
                              ),
+                             
+                             radioButtons(
+                               "join",
+                               "Select",
+                               c("Yes", "No")
+                             ),
                                           
                              
-                            actionButton("submitbutton", "Submit")
+                            actionButton("mitbutton", "Submit")
                            ),
                            
                            
@@ -61,9 +68,9 @@ server <- function(input, output) {
 
   
   output$data1 <- renderDataTable({
-    input$submitbutton
+    input$mitbutton
     
-    if(input$submitbutton == 0)
+    if(input$mitbutton == 0)
       return()
     else
       mydb <- dbConnect(MySQL(),     
@@ -72,11 +79,14 @@ server <- function(input, output) {
                         dbname='db_name',     
                         port=3306)
               
+    if(input$select2 == "none")
+      table <- dbGetQuery(mydb, paste0('SELECT * FROM ', input$select1))
+    else
       table <- dbGetQuery(mydb, paste0('SELECT * FROM ', input$select1, ' A, ', input$select2, ' B WHERE A.code = B.code AND A.year = B.year'))
+
+    lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
       
-      lapply( dbListConnections( dbDriver( drv = "MySQL")), dbDisconnect)
-      
-      isolate(table)
+    isolate(table)
 
   })
   
