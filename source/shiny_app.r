@@ -2,7 +2,7 @@
 # Author: Moritz Berger         #
 # Date: 25.06.2021              #
 # Complete shiny app for        #
-# DBS-prohject                  #
+# DBS-project                   #
 #-------------------------------#
 
 # Load R packages
